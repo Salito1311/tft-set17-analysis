@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TFT Set 17: Realm of the Gods — A Systems Analysis | Salito</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Alegreya+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0ede4;
+    --surface: #f7f5ef;
+    --surface2: #edeadf;
+    --lavender: #8b7cb8;
+    --lavender-dim: rgba(139,124,184,0.08);
+    --lavender-mid: rgba(139,124,184,0.2);
+    --sage: #5e8c61;
+    --sage-dim: rgba(94,140,97,0.08);
+    --sage-mid: rgba(94,140,97,0.2);
+    --fire: #c76a3f;
+    --fire-dim: rgba(199,106,63,0.07);
+    --water: #5b8fa8;
+    --water-dim: rgba(91,143,168,0.07);
+    --wind: #7eb09a;
+    --wind-dim: rgba(126,176,154,0.07);
+    --lightning: #b8a04a;
+    --lightning-dim: rgba(184,160,74,0.07);
+    --ink: #33302b;
+    --ink-light: #56514a;
+    --ink-faint: #7d776e;
+    --ink-ghost: #a8a29a;
+    --border: #d9d3c5;
+    --warn: #b84a32;
+    --warn-dim: rgba(184,74,50,0.07);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink-light);
+    font-family: 'Alegreya', serif;
+    font-size: 17px;
+    line-height: 1.9;
+    overflow-x: hidden;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 256px 256px;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .container { max-width: 700px; margin: 0 auto; padding: 0 28px; position: relative; z-index: 1; }
+
+  .doc-header { padding: 80px 0 40px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+  .doc-meta { font-family: 'Alegreya SC', serif; font-size: 10px; letter-spacing: 3px; color: var(--ink-ghost); margin-bottom: 16px; display: flex; gap: 20px; flex-wrap: wrap; }
+  .doc-header h1 { font-family: 'Cormorant', serif; font-size: clamp(26px, 5vw, 38px); font-weight: 700; color: var(--ink); line-height: 1.2; margin-bottom: 10px; }
+  .doc-subtitle { font-family: 'Cormorant', serif; font-size: 19px; font-style: italic; color: var(--ink-faint); margin-bottom: 20px; }
+  .doc-author { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--sage-dim); border: 1px solid var(--sage-mid); border-radius: 20px; font-family: 'Alegreya SC', serif; font-size: 11px; letter-spacing: 2px; color: var(--sage); }
+
+  .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px 28px; margin-bottom: 40px; }
+  .toc h4 { font-family: 'Alegreya SC', serif; font-size: 10px; letter-spacing: 3px; color: var(--ink-ghost); margin-bottom: 12px; }
+  .toc a { display: block; color: var(--ink-light); text-decoration: none; font-size: 15px; padding: 4px 0; transition: color 0.2s; }
+  .toc a:hover { color: var(--sage); }
+  .chapter-num { font-family: 'Alegreya SC', serif; font-size: 11px; letter-spacing: 1px; color: var(--ink-ghost); margin-right: 8px; }
+
+  h2 { font-family: 'Cormorant', serif; font-size: 26px; font-weight: 700; color: var(--ink); margin: 56px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  h3 { font-family: 'Cormorant', serif; font-size: 20px; font-weight: 600; color: var(--ink); margin: 32px 0 12px; }
+  p { margin-bottom: 16px; }
+  strong { color: var(--ink); }
+
+  .callout { border-radius: 8px; padding: 20px 24px; margin: 24px 0; font-size: 15px; line-height: 1.8; }
+  .callout-insight { background: var(--lavender-dim); border-left: 3px solid var(--lavender); }
+  .callout-insight .callout-label { color: var(--lavender); }
+  .callout-warning { background: var(--warn-dim); border-left: 3px solid var(--warn); }
+  .callout-warning .callout-label { color: var(--warn); }
+  .callout-data { background: var(--water-dim); border-left: 3px solid var(--water); }
+  .callout-data .callout-label { color: var(--water); }
+  .callout-prediction { background: var(--wind-dim); border-left: 3px solid var(--wind); }
+  .callout-prediction .callout-label { color: var(--wind); }
+  .callout-quote { background: var(--lightning-dim); border-left: 3px solid var(--lightning); }
+  .callout-quote .callout-label { color: var(--lightning); }
+  .callout-label { font-family: 'Alegreya SC', serif; font-size: 10px; letter-spacing: 2px; display: block; margin-bottom: 6px; }
+
+  .god-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 24px 0; }
+  .god-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; position: relative; overflow: hidden; transition: border-color 0.3s; }
+  .god-card:hover { border-color: var(--lavender-mid); }
+  .god-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .god-card-name { font-family: 'Cormorant', serif; font-size: 19px; font-weight: 700; color: var(--ink); }
+  .god-card-reward { font-family: 'Alegreya SC', serif; font-size: 10px; letter-spacing: 1px; color: var(--ink-ghost); margin-bottom: 8px; }
+  .god-card p { font-size: 15px; line-height: 1.75; margin-bottom: 0; }
+  .god-perk { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 14px; color: var(--ink-faint); font-style: italic; }
+  .god-perk strong { color: var(--ink-light); font-style: normal; }
+
+  /* Tier label for ch4 */
+  .god-tier { font-family: 'Alegreya SC', serif; font-size: 10px; letter-spacing: 2px; padding: 3px 10px; border-radius: 12px; }
+  .tier-s-label { background: var(--sage-dim); color: var(--sage); border: 1px solid var(--sage-mid); }
+  .tier-a-label { background: var(--water-dim); color: var(--water); border: 1px solid rgba(91,143,168,0.2); }
+  .tier-b-label { background: var(--lightning-dim); color: var(--lightning); border: 1px solid rgba(184,160,74,0.2); }
+  .tier-c-label { background: rgba(168,162,154,0.1); color: var(--ink-ghost); border: 1px solid var(--border); }
+
+  .game-log { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin: 20px 0; }
+  .game-log-header { padding: 14px 20px; background: var(--surface2); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .game-log-title { font-family: 'Cormorant', serif; font-size: 16px; font-weight: 700; color: var(--ink); }
+  .game-log-result { font-family: 'Alegreya SC', serif; font-size: 10px; letter-spacing: 2px; padding: 3px 10px; border-radius: 12px; }
+  .result-good { background: var(--sage-dim); color: var(--sage); }
+  .result-mid { background: var(--lightning-dim); color: var(--lightning); }
+  .result-bad { background: var(--warn-dim); color: var(--warn); }
+  .game-log-body { padding: 16px 20px; font-size: 14px; line-height: 1.8; }
+  .game-log-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(217,211,197,0.5); }
+  .game-log-row:last-child { border-bottom: none; }
+  .game-log-stage { font-family: 'Alegreya SC', serif; font-size: 11px; letter-spacing: 1px; color: var(--ink-faint); width: 50px; flex-shrink: 0; }
+  .game-log-position { color: var(--ink-faint); width: 40px; flex-shrink: 0; text-align: center; }
+  .game-log-rewards { color: var(--ink-light); flex: 1; }
+  .game-log-note { padding: 10px 20px 16px; font-size: 13px; color: var(--ink-faint); font-style: italic; border-top: 1px solid var(--border); }
+
+  .changes-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+  .changes-table th { font-family: 'Alegreya SC', serif; font-size: 10px; letter-spacing: 2px; color: var(--ink-faint); text-align: left; padding: 10px 14px; border-bottom: 2px solid var(--border); background: var(--surface); }
+  .changes-table td { padding: 8px 14px; border-bottom: 1px solid var(--border); }
+  .changes-table .old { color: var(--warn); text-decoration: line-through; }
+  .changes-table .new { color: var(--sage); font-weight: 600; }
+  .changes-table .arrow { color: var(--ink-ghost); text-align: center; width: 30px; }
+
+  .takeaway { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 28px; margin: 32px 0; text-align: center; }
+  .takeaway h4 { font-family: 'Alegreya SC', serif; font-size: 11px; letter-spacing: 3px; color: var(--sage); margin-bottom: 10px; }
+  .takeaway p { font-family: 'Cormorant', serif; font-size: 20px; font-style: italic; color: var(--ink); margin-bottom: 0; line-height: 1.5; }
+
+  .fill-me { background: rgba(184,160,74,0.08); border: 1px dashed rgba(184,160,74,0.3); border-radius: 8px; padding: 20px 24px; margin: 20px 0; font-size: 14px; color: var(--ink-faint); font-style: italic; }
+  .fill-me::before { content: '✏️ PENDING UPDATE'; display: block; font-family: 'Alegreya SC', serif; font-size: 10px; letter-spacing: 2px; color: #b8a04a; font-style: normal; margin-bottom: 6px; }
+
+  .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-ghost); text-decoration: none; font-size: 13px; font-style: italic; margin-bottom: 20px; transition: color 0.3s; }
+  .back-link:hover { color: var(--sage); }
+
+  /* God appearance chart */
+  .appearance-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .appearance-name { font-family: 'Cormorant', serif; font-size: 14px; font-weight: 600; color: var(--ink); width: 80px; flex-shrink: 0; }
+  .appearance-track { flex: 1; height: 14px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .appearance-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--lavender), var(--sage)); transition: width 1s ease; }
+  .appearance-count { font-size: 12px; color: var(--ink-faint); width: 30px; text-align: right; }
+
+  footer { margin-top: 60px; padding: 32px 0; border-top: 1px solid var(--border); text-align: center; font-family: 'Alegreya SC', serif; font-size: 10px; letter-spacing: 3px; color: var(--ink-ghost); }
+
+  @media (max-width: 640px) {
+    .game-log-header { flex-direction: column; align-items: flex-start; }
+    .god-card { padding: 16px 18px; }
+    .changes-table { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <a href="salito-portfolio-v2-frieren.html" class="back-link">← Back to portfolio</a>
+
+  <div class="doc-header">
+    <div class="doc-meta">
+      <span>🔥 Systems Analysis</span>
+      <span>📅 April 2026</span>
+      <span>🐉 PBE Patch 17.1</span>
+      <span>🎮 ~100-150 Games + VOD Review</span>
+    </div>
+    <h1>Realm of the Gods: What Happens When You Replace the Carousel</h1>
+    <div class="doc-subtitle">A Challenger's analysis of TFT Set 17's most fundamental design change</div>
+    <div class="doc-author">☘ Salito — Challenger TFT</div>
+  </div>
+
+  <div class="toc">
+    <h4>Contents</h4>
+    <a href="#ch1"><span class="chapter-num">I.</span> What Carousel Was — And Why It Mattered</a>
+    <a href="#ch2"><span class="chapter-num">II.</span> Set 17: The Realm of the Gods</a>
+    <a href="#ch3"><span class="chapter-num">III.</span> The Inherited Landscape — Set 16's System Changes</a>
+    <a href="#ch4"><span class="chapter-num">IV.</span> The Meta, The Data, and What Comes Next</a>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- CHAPTER I -->
+  <!-- ============================================ -->
+
+  <h2 id="ch1">I. What Carousel Was — And Why It Mattered</h2>
+
+  <p>Carousel has been part of TFT since the game launched. For seven years it was the one constant across every set, every meta, every patch. To understand what Set 17 is doing, we need to be precise about what carousel actually was — not just as a mechanic, but as a design system serving multiple roles at once.</p>
+
+  <h3>The Catch-Up System</h3>
+
+  <p>Losing players picked first — but this wasn't purely a charity system. Strong players who were winning could still walk away with a 4-cost or 5-cost champion if nobody before them wanted the attached component. The pick order created a mini-game of prediction: do the losing players need the Recurve Bow on that Fiora, or will they grab the cheaper unit with the Spatula?</p>
+
+  <p>There were also augments that directly interacted with this system. Picks like <strong>Young Wild and Free</strong> and <strong>Titanic Titan</strong> let you pick earlier on carousel regardless of placement — creating a way for win-streakers to invest augment value into pushing their advantage even further. Carousel wasn't just a catch-up system; it had enough strategic surface area that players could build around it.</p>
+
+  <h3>The Item Distribution Guarantee</h3>
+
+  <p>At the end of any game, every player received the same number of base components — ignoring augments and other generation. Carousel was a key part of this baseline guarantee. The components were random, but the total count was equalized.</p>
+
+  <h3>The Denial Window</h3>
+
+  <p>Carousel was the only moment in TFT where you could directly interact with your opponents' resources. You could see that someone desperately needed a Recurve Bow to complete their carry's items and take it before they could. You could snipe a key champion — grabbing that 4-cost unit someone needed for their 2-star upgrade, denying them the power spike that would stabilize their board. Whether it was components or units, carousel gave you the ability to read other players' boards and actively sabotage their plans. This denial mechanic was the closest TFT ever came to meaningful player-versus-player interaction outside of combat.</p>
+
+  <h3>The Variance Generator</h3>
+
+  <p>Sometimes carousel had exactly what you needed. Sometimes it didn't. This randomness created divergent game states and kept TFT self-balancing — no single strategy could dominate for too long because you could never fully control your item outcomes.</p>
+
+  <div class="callout callout-insight">
+    <span class="callout-label">Design Insight</span>
+    Removing carousel doesn't just remove one mechanic — it removes four functions at once: catch-up, item distribution, denial, and variance. Any replacement needs to address all four, or the game develops structural holes.
+  </div>
+
+  <!-- ============================================ -->
+  <!-- CHAPTER II -->
+  <!-- ============================================ -->
+
+  <h2 id="ch2">II. Set 17: The Realm of the Gods</h2>
+
+  <p>In Set 17, carousel rounds are replaced by God Selection. Two gods (from a pool of nine) appear each round, and players independently choose one. Committing to the same god unlocks a stronger boon at stage 4-7. Carousel was <em>reactive</em> — you adapted to what was available. God Selection is <em>proactive</em> — you choose a strategy and lean into it.</p>
+
+  <h3>The Nine Gods</h3>
+
+  <div class="god-grid">
+
+    <div class="god-card">
+      <div class="god-card-header"><span class="god-card-name">Ahri</span></div>
+      <div class="god-card-reward">Gold · Experience · Team Buff</div>
+      <p>Grants gold and experience tempo, enabling players to hit level breakpoints ahead of the lobby. Supports both fast-level and economy-focused strategies.</p>
+      <div class="god-perk"><strong>4-7 Boon:</strong> 2% AD and AP per level team-wide, plus 2 XP per turn. Can reach level 9 by 5-1 (18% team-wide damage buff) while accelerating toward level 10.</div>
+    </div>
+
+    <div class="god-card">
+      <div class="god-card-header"><span class="god-card-name">Soraka</span></div>
+      <div class="god-card-reward">HP Sustain · Team Durability</div>
+      <p>Grants raw HP, extending the runway before elimination. Primary god supporting intentional lose-streak strategies.</p>
+      <div class="god-perk"><strong>4-7 Boon:</strong> +2 HP team-wide per missing tactician HP, plus heals 1 tactician HP per turn. Turns a health deficit into a scaling advantage.</div>
+    </div>
+
+    <div class="god-card">
+      <div class="god-card-header"><span class="god-card-name">Ekko</span></div>
+      <div class="god-card-reward">Delayed Power Boost · Anomaly Item</div>
+      <p>Grants a power boost that activates after a few rounds. Suited for players building toward a streak who can afford the tempo delay.</p>
+      <div class="god-perk"><strong>4-7 Boon:</strong> Grants an Anomaly item — significant raw power scaled to champion role. Flexible across any comp. Anomaly trigger was buffed: Caster Mana Spent reduced from 70 to 50.</div>
+    </div>
+
+    <div class="god-card">
+      <div class="god-card-header"><span class="god-card-name">Thresh</span></div>
+      <div class="god-card-reward">Random God Boon · Gold</div>
+      <p>Grants a random boon from any other god plus gold. The hedge pick when the alternative doesn't fit your game state. His randomness reintroduces the variance that gods were designed to reduce.</p>
+      <div class="god-perk"><strong>4-7 Boon:</strong> Can grant gold, rerolls, components, HP, or team-wide attack speed. High ceiling, low floor.</div>
+    </div>
+
+    <div class="god-card">
+      <div class="god-card-header"><span class="god-card-name">Yasuo</span></div>
+      <div class="god-card-reward">Hex Power · Stat Buffs/Debuffs</div>
+      <p>Creates placeable hexes granting stat buffs or debuffs like anti-heal. Power is tied to whether opponents scout and reposition around it.</p>
+      <div class="god-perk"><strong>4-7 Boon:</strong> Increases hex power by 50%. Telegraphs carry position — strong where scouting is rare, a liability where it's constant.</div>
+    </div>
+
+    <div class="god-card">
+      <div class="god-card-header"><span class="god-card-name">Evelynn</span></div>
+      <div class="god-card-reward">Immediate Power (at HP cost)</div>
+      <p>Instant combat power in exchange for tactician HP. Only positive when healthy enough to afford the cost — primarily a win-streak option.</p>
+      <div class="god-perk"><strong>4-7 Boon:</strong> Team-wide durability plus -1 HP per loss. Limited value if you fall behind after committing early.</div>
+    </div>
+
+    <div class="god-card">
+      <div class="god-card-header"><span class="god-card-name">Varus</span></div>
+      <div class="god-card-reward">Champions · Duplicators</div>
+      <p>Gives random champions and duplicators — economy without strategic direction since champions are completely random.</p>
+      <div class="god-perk"><strong>4-7 Boon:</strong> +10 HP team-wide per star level, plus increased 5-cost odds. Internally contradictory: HP-per-star-level incentivizes rerolling, but 5-cost odds incentivizes fast leveling.</div>
+    </div>
+
+    <div class="god-card">
+      <div class="god-card-header"><span class="god-card-name">Kayle</span></div>
+      <div class="god-card-reward">Item Components</div>
+      <p>Provides item components — the most direct carousel replacement. Safe, straightforward, value depends on whether components fit your build.</p>
+      <div class="god-perk"><strong>4-7 Boon:</strong> Grants a random Radiant item. The randomness feels like a holdover from the carousel era in a system designed for player agency.</div>
+    </div>
+
+    <div class="god-card">
+      <div class="god-card-header"><span class="god-card-name">Aurelion Sol</span></div>
+      <div class="god-card-reward">Raw Power · Quests</div>
+      <p>Offers raw power without the economy, item, or HP tools that other gods provide. Least frequently appearing god in the pool.</p>
+      <div class="god-perk"><strong>4-7 Boon:</strong> Grants 3 pickable quests. Power output depends heavily on which quests appear and whether they align with your board state.</div>
+    </div>
+
+  </div>
+
+  <h3>The New Catch-Up Mechanic</h3>
+
+  <div class="callout callout-quote">
+    <span class="callout-label">Mort (Lead TFT Designer)</span>
+    "It scales with placement. 3rd + 4th get 1 reforger, 5th + 6th get 1 anvil + 1 reforger, 7th + 8th get 2 anvils + reforger. And it works like carousel where as people die everyone gets better rewards (ie, if only 4 people are alive, they'll get the 5th-8th rewards, not 1st-4th)."
+  </div>
+
+  <p>The worse your placement, the more deterministic item control you receive. The "as people die" clause rarely matters in practice — it's extremely rare for anyone to be eliminated before the third god offering at stage 4-4.</p>
+
+  <p>Beyond components, losing players receive better champion offerings — 4-costs that suggest a direction, 2-star 1-costs that spike boards. And traits like <strong>Anima</strong>, <strong>Timebreaker</strong>, <strong>Arbiter</strong>, and <strong>Primordian</strong> all generate supplementary economy from losing or playing weak boards.</p>
+
+  <h3>The Shifting Weight of Randomness</h3>
+
+  <p>Set 17 keeps the base component count equal between players, but dramatically reduces randomness for losing players specifically. Anvils let you choose your component. Reforgers let you reroll items. The total count is the same, but the <em>control</em> is lopsided — lose-streakers get deterministic BIS items while win-streakers take whatever falls from PvE rounds.</p>
+
+  <h3>What's Lost: The Denial Window and Late-Game Rewards</h3>
+
+  <p>During god selection, you can observe opponents but can't interfere. With carousel, scouting and denial happened simultaneously. Now, scouting costs time you could spend on your own board, and you only see what others picked <em>after</em> the selection ends. A competitive tool that skilled players relied on is gone, and nothing in the new system replaces it.</p>
+
+  <p>There's also a loss in reward variety during the later stages. In old TFT, late carousels (stage 5, 6+) could offer complete items, components, units that translated to gold, or even emblems — a wide range of resources that kept late-game options open. In Set 17, later god offering rounds only give 3 items plus an item anvil (4 more items you can choose). It's more deterministic, which is consistent with the system's philosophy, but it narrows the reward pool compared to what carousel provided. You gain item control but lose the diversity of late-game resources.</p>
+
+  <!-- ============================================ -->
+  <!-- CHAPTER III -->
+  <!-- ============================================ -->
+
+  <h2 id="ch3">III. The Inherited Landscape — Set 16's System Changes</h2>
+
+  <p>Several significant system changes introduced during Set 16 carry forward into Set 17 and interact directly with the god system.</p>
+
+  <h3>Experience Curve</h3>
+
+  <table class="changes-table">
+    <thead><tr><th>Level</th><th>Previous</th><th></th><th>Set 16</th><th>Impact</th></tr></thead>
+    <tbody>
+      <tr><td>7 → 8</td><td class="old">48</td><td class="arrow">→</td><td class="new">60</td><td>Slows fast-8 strategies</td></tr>
+      <tr><td>8 → 9</td><td class="old">76</td><td class="arrow">→</td><td class="new">68</td><td>Rewards economy-first play</td></tr>
+      <tr><td>9 → 10</td><td class="old">84</td><td class="arrow">→</td><td class="new">68</td><td>Level 10 now realistic</td></tr>
+    </tbody>
+  </table>
+
+  <p>The 7-to-8 bottleneck gives reroll players more time at level 7 before the lobby levels past them. The cheaper late levels make Ahri's +2 XP/turn dramatically more powerful — compounding precisely at the levels that got cheaper.</p>
+
+  <h3>Shop Odds</h3>
+
+  <p><strong>3-cost at level 7:</strong> originally 43%, then adjusted to <strong>40%</strong> in the latest PBE patch (19/30/40/10/1%). This nerf was intended to weaken reroll strategies but, as we'll see in Chapter IV, hasn't landed as hard as expected.</p>
+
+  <p><strong>4-cost at level 8:</strong> 30% odds. Strong 4-cost carry potential at 8, but the shallow tank pool at this cost (only Nunu, Tahm Kench, Mighty Mech, and Rammus) creates a bottleneck problem.</p>
+
+  <h3>Player Damage</h3>
+
+  <table class="changes-table">
+    <thead><tr><th>Stage</th><th>Previous</th><th></th><th>Set 16</th><th>Impact</th></tr></thead>
+    <tbody>
+      <tr><td>Stage 3</td><td class="old">5</td><td class="arrow">→</td><td class="new">6</td><td>Punishes lose-streaking through stage 3</td></tr>
+      <tr><td>Stage 4</td><td class="old">8</td><td class="arrow">→</td><td class="new">7</td><td>More forgiving mid-game for late stabilizers</td></tr>
+    </tbody>
+  </table>
+
+  <p>Stage 3 is more punishing for lose-streakers, but stage 4 is more forgiving. If you survive the stage 3 gauntlet, the payout has never been higher — anvils, reforgers, Soraka's scaling, and trait-based economy all kick in.</p>
+
+  <!-- ============================================ -->
+  <!-- CHAPTER IV -->
+  <!-- ============================================ -->
+
+  <h2 id="ch4">IV. The Meta, The Data, and What Comes Next</h2>
+
+  <p>Set 17 spent two weeks on PBE (April 1–15), and during that window Riot made multiple balance passes that reshaped the meta in real time. This chapter covers the full arc of those changes — what Riot tried, what worked, what didn't, and where the meta landed heading into launch. All observations are drawn from approximately 100–150 games of personal play, VOD reviews, and streamer analysis across the PBE window.</p>
+
+  <h3>What Riot Changed During PBE</h3>
+
+  <p>Riot made three categories of structural adjustments across the PBE window, each aimed at different problems:</p>
+
+  <p><strong>Lose-streak resource adjustments.</strong> Lower placements lost their additional Reforger on PvE rounds. This was a direct attempt to reduce the resource gap between winning and losing players. In practice, it didn't move the needle — the structural advantages of lose-streaking (component anvils, champion direction, trait-based economy) are so much larger than a single Reforger that removing it barely registers.</p>
+
+  <p><strong>Level 7 shop odds nerf.</strong> 3-cost odds at level 7 were reduced from 43% to 40% (shop odds changed to 19/30/40/10/1%). This targeted reroll strategies directly. The impact was marginal — a few more gold worth of rolls to find upgrades, but Primordian free units and Timebreaker free rerolls easily compensate for the 3% loss.</p>
+
+  <p><strong>Champion and trait rebalancing — the real story.</strong> This is where the PBE journey gets interesting, because it shows a clear pattern: every time Riot nerfed the dominant comps, new ones emerged to fill the gap, and the meta kept bouncing between reroll and fast 8 strength.</p>
+
+  <p>In the early PBE days, Kai'sa/Fizz reroll and Graves/LeBlanc fast 8 were dominant. Riot nerfed both — Kai'sa and Fizz took direct damage hits, Graves lost Grav Booster AS (100% → 70%), Rogue trait was weakened across all breakpoints, and Mecha bonus health dropped from 60% to 50%. On the other side, Samira, Nami, and Xayah were buffed to provide alternative carry options.</p>
+
+  <p>What happened next was predictable: the nerfed reroll comps saw lower pick rates, but new reroll comps immediately arose — Voyager Aurora, Urgot reroll, MF/Viktor. The fast 8 comps that got buffed (Nami flex, Corki/Riven) briefly looked competitive. But then the final branch cut patch swung the pendulum back hard toward reroll.</p>
+
+  <div class="callout callout-warning">
+    <span class="callout-label">Final Branch Cut — The Decisive Patch</span>
+    The last PBE patch before launch further nerfed the fast 8 path: LeBlanc's sigil damage was gutted (80/120/360 → 70/105/360), Nami's primary spell damage was reduced, Tahm Kench — one of only four 4-cost tanks — was nerfed, Graves took another round of hits, and the Arbiter trait (core to LeBlanc/Karma comps) was weakened across all breakpoints. Meanwhile, reroll-favored units like Illaoi, Miss Fortune, and multiple 2-costs received buffs. Timebreaker took a nerf (4-piece AS 50% → 40%), but the trait's economy generation — which is the real problem — was left untouched. The gap between reroll and fast 8 viability widened in the final patch, not narrowed.
+  </div>
+
+  <p>The end result: most reroll comps came out on top of the PBE window, while fast 8 comps may feel underwhelming heading into launch. The consistent pattern across two weeks of patching was that Riot could nerf individual reroll carries, but new ones always emerged because the system-level incentives (lose-streak rewards, trait economy, cheap units, early board completion) were never touched. Fast 8 comps kept getting hit — sometimes directly through carry nerfs, sometimes indirectly through tank and trait nerfs — and never got the systemic support they needed to compete.</p>
+
+  <h3>Win-Streaking Feels Unrewarded</h3>
+
+  <p>Across five tracked games, win-streaking through early stages consistently failed to translate into strong final placements. Game 4 is the clearest example: 1st place at 2-4, 1st at 3-4, 1st at 4-4 — then eliminated 6th. Lower-placed players received better items and carries for free, then outscaled a board that had been winning all game.</p>
+
+  <p>The core problem is that win-streaking offers diminishing returns while lose-streaking offers compounding returns. A win-streaker gets gold from streak bonuses and higher placement, but their items are whatever PvE drops give them and their champion offerings are lower-cost units they don't need. A lose-streaker gets gold from interest (which they can accumulate safely), BIS items from anvils, and free copies of the carry they need from higher-cost champion offerings. By stage 4, the lose-streaker has better items, a clearer comp direction, and equal or more gold.</p>
+
+  <h3>The Tank Class Problem</h3>
+
+  <p>There's a structural issue that amplifies the reroll meta: Set 17 has an unusually shallow 4-cost tank pool. The only 4-cost frontline options are Nunu, Tahm Kench, Mighty Mech, and Rammus. For a player who reaches level 8 or 9 hoping to stabilize with a strong frontline plus carry, this creates a bottleneck — by the time you're rolling at 8, these units are likely contested or out of the pool entirely.</p>
+
+  <p>On top of the shallow champion pool, tank itemization also took a hit this set. Several defensive items were nerfed, and Tahm Kench getting hit in the final branch cut — when he was already one of only four options — makes this even more acute. The combination of fewer tank options and weaker tank items means that fast-8 and fast-9 strategies are fighting uphill on two fronts.</p>
+
+  <p>The problem extends to 5-costs as well: there are no 5-cost tank champions in Set 17. Both Shen and Blitzcrank are magic fighters, not true frontliners. This means that even if you push level 9, you're still relying on contested 4-cost tanks for your frontline — the bottleneck doesn't go away at higher levels, it just gets more expensive to deal with.</p>
+
+  <p>Rerolling at level 7 avoids this problem entirely — your units are cheaper, more plentiful, and you can complete your board before the tank bottleneck matters.</p>
+
+  <h3>God Tier Rankings</h3>
+
+  <p>Based on the full PBE window of ~100–150 games observed, here's how the gods rank for competitive play:</p>
+
+  <div class="god-grid">
+    <div class="god-card" style="border-left: 3px solid var(--sage);">
+      <div class="god-card-header">
+        <span class="god-card-name">Ahri</span>
+        <span class="god-tier tier-s-label">S Tier</span>
+      </div>
+      <p>Clickable in ~70% of games. Gold and XP tempo is unmatched, and the 4-7 boon is a win condition in itself. Even stronger with Set 16's cheaper late levels carrying forward. The god other gods are measured against.</p>
+    </div>
+    <div class="god-card" style="border-left: 3px solid var(--sage);">
+      <div class="god-card-header">
+        <span class="god-card-name">Soraka</span>
+        <span class="god-tier tier-s-label">S Tier</span>
+      </div>
+      <p>In a meta where lose-streaking is the dominant strategy, Soraka is as valuable as Ahri. HP sustain extends your runway, and the 4-7 boon turns your health deficit into a team-wide scaling advantage. Most-appearing god across 20 tracked games (8 appearances). If you're playing lose-streak — and you should be — Soraka is always the right click.</p>
+    </div>
+    <div class="god-card" style="border-left: 3px solid var(--water);">
+      <div class="god-card-header">
+        <span class="god-card-name">Ekko</span>
+        <span class="god-tier tier-a-label">A Tier</span>
+      </div>
+      <p>Anomaly item is flexible and strong in any comp. Trigger buff (70→50 mana spent) makes activation more reliable. Volatile appearance rate between patches remains a concern.</p>
+    </div>
+    <div class="god-card" style="border-left: 3px solid var(--water);">
+      <div class="god-card-header">
+        <span class="god-card-name">Kayle</span>
+        <span class="god-tier tier-a-label">A Tier</span>
+      </div>
+      <p>More useful than expected. Free components are never bad, and in a meta where BIS items matter this much, guaranteed components have real value. The random Radiant boon at 4-7 is inconsistent, but the base component offerings alone justify the pick.</p>
+    </div>
+    <div class="god-card" style="border-left: 3px solid var(--lightning);">
+      <div class="god-card-header">
+        <span class="god-card-name">Thresh</span>
+        <span class="god-tier tier-b-label">B Tier</span>
+      </div>
+      <p>The random boon from any other god plus gold makes him a decent flex pick, and his gold injection in early stages can help hit economy breakpoints. Worth clicking when the alternative god doesn't fit your game state.</p>
+    </div>
+    <div class="god-card" style="border-left: 3px solid var(--lightning);">
+      <div class="god-card-header">
+        <span class="god-card-name">Aurelion Sol</span>
+        <span class="god-tier tier-b-label">B Tier</span>
+      </div>
+      <p>The 4-7 quests are mostly underwhelming, but the second quest option — 22 gold and 1 item anvil after 3 rounds — is genuinely strong and worth building toward. If you hit that specific quest, ASol delivers real value. The inconsistency of the other options holds him back.</p>
+    </div>
+    <div class="god-card" style="border-left: 3px solid var(--lightning);">
+      <div class="god-card-header">
+        <span class="god-card-name">Varus</span>
+        <span class="god-tier tier-b-label">B Tier</span>
+      </div>
+      <p>A strong steroid for reroll comps — the free champions and duplicators translate directly into economy and upgrades. However, his 4-7 boon remains counter-intuitive: HP-per-star-level rewards rerolling while increased 5-cost odds rewards leveling. The base offerings carry him; the boon design holds him back.</p>
+    </div>
+    <div class="god-card" style="border-left: 3px solid var(--border);">
+      <div class="god-card-header">
+        <span class="god-card-name">Yasuo</span>
+        <span class="god-tier tier-c-label">C Tier</span>
+      </div>
+      <p>Hex power is real but counterplayable. Value inversely correlates with lobby skill — strong where scouting is rare, a liability where it's constant. Hard to justify over other gods in competitive lobbies.</p>
+    </div>
+    <div class="god-card" style="border-left: 3px solid var(--border);">
+      <div class="god-card-header">
+        <span class="god-card-name">Evelynn</span>
+        <span class="god-tier tier-c-label">C Tier</span>
+      </div>
+      <p>A win-streak god in a meta that doesn't reward win-streaking. Paying HP for early tempo when lose-streakers outscale you with free items and carries is a losing trade. The -1 HP per loss on her 4-7 boon makes it worse if you fall behind after committing.</p>
+    </div>
+  </div>
+
+  <h3>God Appearance Rates — 50 Games Tracked</h3>
+
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin: 24px 0;">
+    <div class="appearance-bar"><span class="appearance-name">Soraka</span><div class="appearance-track"><div class="appearance-fill" style="width: 96%"></div></div><span class="appearance-count">24</span></div>
+    <div class="appearance-bar"><span class="appearance-name">Yasuo</span><div class="appearance-track"><div class="appearance-fill" style="width: 60%"></div></div><span class="appearance-count">15</span></div>
+    <div class="appearance-bar"><span class="appearance-name">Kayle</span><div class="appearance-track"><div class="appearance-fill" style="width: 48%"></div></div><span class="appearance-count">12</span></div>
+    <div class="appearance-bar"><span class="appearance-name">Ahri</span><div class="appearance-track"><div class="appearance-fill" style="width: 44%"></div></div><span class="appearance-count">11</span></div>
+    <div class="appearance-bar"><span class="appearance-name">Thresh</span><div class="appearance-track"><div class="appearance-fill" style="width: 44%"></div></div><span class="appearance-count">11</span></div>
+    <div class="appearance-bar"><span class="appearance-name">Evelynn</span><div class="appearance-track"><div class="appearance-fill" style="width: 36%"></div></div><span class="appearance-count">9</span></div>
+    <div class="appearance-bar"><span class="appearance-name">Ekko</span><div class="appearance-track"><div class="appearance-fill" style="width: 28%"></div></div><span class="appearance-count">7</span></div>
+    <div class="appearance-bar"><span class="appearance-name">Aurelion Sol</span><div class="appearance-track"><div class="appearance-fill" style="width: 28%"></div></div><span class="appearance-count">7</span></div>
+    <div class="appearance-bar"><span class="appearance-name">Varus</span><div class="appearance-track"><div class="appearance-fill" style="width: 24%"></div></div><span class="appearance-count">6</span></div>
+  </div>
+
+  <p>Soraka appeared in nearly half of all tracked games (24 out of 50) — far more than any other god. In a meta where lose-streaking is the dominant strategy, the god that most directly supports it is also the one you see most often. Whether this is coincidence, intended weighting, or the system reinforcing the strongest strategy is unclear, but the data is striking. Yasuo at 15 appearances is the second most common despite being C tier — suggesting appearance rates don't correlate with competitive viability.</p>
+
+  <h3>PBE Game Logs</h3>
+
+  <div class="game-log">
+    <div class="game-log-header">
+      <span class="game-log-title">Game 1 — Fast 8 Master Yi · Win-Streak</span>
+      <span class="game-log-result result-bad">5th Place</span>
+    </div>
+    <div class="game-log-body">
+      <div class="game-log-row"><span class="game-log-stage">Gods</span><span class="game-log-rewards">Evelynn / Yasuo</span></div>
+      <div class="game-log-row"><span class="game-log-stage">Augs</span><span class="game-log-rewards">Portable Forge + Magic Roll + Gilded Steel</span></div>
+      <div class="game-log-row"><span class="game-log-stage">2-4</span><span class="game-log-position">1st</span><span class="game-log-rewards">Evelynn boon — 2-cost + 1-cost 1g ×2</span></div>
+      <div class="game-log-row"><span class="game-log-stage">3-4</span><span class="game-log-position">3rd</span><span class="game-log-rewards">Yasuo boon — 3-cost + 2-cost 1g + 1-cost 2g</span></div>
+      <div class="game-log-row"><span class="game-log-stage">4-4</span><span class="game-log-position">3rd</span><span class="game-log-rewards">Evelynn boon — 3-cost ×2 + 2-cost 1g</span></div>
+    </div>
+    <div class="game-log-note">Win-streaked stages 2–3 into slow bleed stage 4. 5 rerollers in the lobby — couldn't compete with 3-star boards despite level advantage.</div>
+  </div>
+
+  <div class="game-log">
+    <div class="game-log-header">
+      <span class="game-log-title">Game 2 — Blitz/Nami · Mixed Streak + Timebreaker</span>
+      <span class="game-log-result result-good">3rd Place</span>
+    </div>
+    <div class="game-log-body">
+      <div class="game-log-row"><span class="game-log-stage">Gods</span><span class="game-log-rewards">Kayle / Aurelion Sol</span></div>
+      <div class="game-log-row"><span class="game-log-stage">Augs</span><span class="game-log-rewards">Trade Sector + Epic Rolldown + Exclusive Customization</span></div>
+      <div class="game-log-row"><span class="game-log-stage">2-4</span><span class="game-log-position">1st</span><span class="game-log-rewards">ASol boon — 2-cost + 1-cost 1g ×2</span></div>
+      <div class="game-log-row"><span class="game-log-stage">3-4</span><span class="game-log-position">5th</span><span class="game-log-rewards">ASol boon — 4-cost + 3-cost 1g + 2-cost 2g (4-cost Nami hit)</span></div>
+      <div class="game-log-row"><span class="game-log-stage">4-4</span><span class="game-log-position">6th</span><span class="game-log-rewards">Kayle boon — 4-cost 1g ×2 + 3-cost 2g</span></div>
+    </div>
+    <div class="game-log-note">Blitz 2 + Nami 2 on level 8 with 40 rerolls from augments + Timebreaker lose-streak econ. 4 rerollers in lobby. Losing in stage 3 gave free Nami for comp direction.</div>
+  </div>
+
+  <div class="game-log">
+    <div class="game-log-header">
+      <span class="game-log-title">Game 3 — Corki/Riven · Lose-Streak</span>
+      <span class="game-log-result result-bad">8th Place</span>
+    </div>
+    <div class="game-log-body">
+      <div class="game-log-row"><span class="game-log-stage">Gods</span><span class="game-log-rewards">Thresh / Ekko</span></div>
+      <div class="game-log-row"><span class="game-log-stage">Augs</span><span class="game-log-rewards">Booster Pack + Teaming Up + Booster Pack++</span></div>
+      <div class="game-log-row"><span class="game-log-stage">2-4</span><span class="game-log-position">6th</span><span class="game-log-rewards">Thresh boon — 3-cost + 2-cost 1g + 2-star 1-cost</span></div>
+      <div class="game-log-row"><span class="game-log-stage">3-4</span><span class="game-log-position">8th</span><span class="game-log-rewards">Ekko boon — 4-cost + 4-cost + 3-cost 1g (free Rammus)</span></div>
+      <div class="game-log-row"><span class="game-log-stage">4-4</span><span class="game-log-position">7th</span><span class="game-log-rewards">Ekko boon — 5-cost + 5-cost + 4-cost 1g</span></div>
+    </div>
+    <div class="game-log-note">Thresh boon gave 11 gold → hit 50g by 2-5. Level 8 at 4-1 with 60 gold. 4–5 rerollers in lobby. Despite perfect economy, couldn't outscale the reroll boards. Eliminated 8th.</div>
+  </div>
+
+  <div class="game-log">
+    <div class="game-log-header">
+      <span class="game-log-title">Game 4 — Shepherd Karma/Sona Lvl 8 · Win-Streak All Stages</span>
+      <span class="game-log-result result-bad">6th Place</span>
+    </div>
+    <div class="game-log-body">
+      <div class="game-log-row"><span class="game-log-stage">Gods</span><span class="game-log-rewards">Yasuo / Aurelion Sol</span></div>
+      <div class="game-log-row"><span class="game-log-stage">Augs</span><span class="game-log-rewards">Frontline Foundation + Exclusive Customization + Indiscriminate Killer</span></div>
+      <div class="game-log-row"><span class="game-log-stage">2-4</span><span class="game-log-position">1st</span><span class="game-log-rewards">ASol boon — 2-cost + 1-cost 1g ×2</span></div>
+      <div class="game-log-row"><span class="game-log-stage">3-4</span><span class="game-log-position">1st</span><span class="game-log-rewards">ASol boon — 2-cost 1g ×2 + 1-cost 2g</span></div>
+      <div class="game-log-row"><span class="game-log-stage">4-4</span><span class="game-log-position">1st</span><span class="game-log-rewards">ASol boon — 3-cost + 2-cost 1g ×2</span></div>
+    </div>
+    <div class="game-log-note">1st place at every god round. Still finished 6th. Lower players received BIS items and carry copies for free, pushed level 9 while I was stuck rolling for upgrades at 8. The clearest evidence that win-streaking is structurally underrewarded.</div>
+  </div>
+
+  <div class="game-log">
+    <div class="game-log-header">
+      <span class="game-log-title">Game 5 — Kindred/Yi · Mixed Streak</span>
+      <span class="game-log-result result-mid">4th Place</span>
+    </div>
+    <div class="game-log-body">
+      <div class="game-log-row"><span class="game-log-stage">Gods</span><span class="game-log-rewards">Soraka / Evelynn</span></div>
+      <div class="game-log-row"><span class="game-log-stage">Augs</span><span class="game-log-rewards">Portable Forge + URF + Exclusive Customization 2</span></div>
+      <div class="game-log-row"><span class="game-log-stage">2-4</span><span class="game-log-position">1st</span><span class="game-log-rewards">Soraka boon — 2-cost + 1-cost 1g ×2</span></div>
+      <div class="game-log-row"><span class="game-log-stage">3-4</span><span class="game-log-position">5th</span><span class="game-log-rewards">Soraka boon — 4-cost + 3-cost 1g + 2-cost 2g</span></div>
+      <div class="game-log-row"><span class="game-log-stage">4-4</span><span class="game-log-position">6th</span><span class="game-log-rewards">Soraka boon — 4-cost 1g ×2 + 3-cost 2g (4-cost Yi 2-star upgrade)</span></div>
+    </div>
+    <div class="game-log-note">3 rerollers took 1st, 2nd, and 3rd place. Reroll dominance in full display.</div>
+  </div>
+
+  <h3>Meta Prediction — Fast 8 vs. Reroll</h3>
+
+  <div class="takeaway">
+    <h4>Set 17 Launch Meta Call</h4>
+    <p>Both reroll and fast 8 are viable — but lose-streak strategies will be far more dominant than win-streaking regardless of which path you take. Playing from behind gives you better items, better direction, and easier access to economy breakpoints.</p>
+  </div>
+
+  <p>From the full PBE window it feels like roughly 70% reroll, 30% fast 8 — and the final branch cut patch pushed it even further in that direction. Both options are playable and both can win lobbies, but it highly depends on augments and god offerings in any given game. The one constant: playing from lose streak feels significantly more rewarding than win-streaking. Hitting economy breakpoints and core units before the standard 4-2 level 8 rolldown puts you at a big advantage, and can safely let you plan toward a level 9 board instead of scrambling to stabilize.</p>
+
+  <h3>Viable Compositions — Final PBE State</h3>
+
+  <div class="callout callout-prediction">
+    <span class="callout-label">Strong Reroll Comps</span>
+    <strong>Primordian Reroll (S tier)</strong> · Caitlyn/TF · Fizz/Kai'sa · 6 Mech Urgot · Miss Fortune/Viktor · Voyager Aurora · Milio/Lulu · Cho'Gath/Ezreal
+    <br><br>
+    There are significantly more viable reroll compositions than fast 8 options. Primordian Reroll stands above the rest — the trait's economy generation is the strongest opener in the set and transitions naturally into multiple carry options. The remaining comps are all viable and playable, with units that are cheap, plentiful, and complete your board before the tank bottleneck matters.
+  </div>
+
+  <div class="callout callout-data">
+    <span class="callout-label">Strong Fast 8 Comps</span>
+    LeBlanc/Karma · Nami Flex · Corki/Riven · Yi/Kindred
+    <br><br>
+    All four are still playable despite the nerfs — they cap higher than reroll in the end game. But the final branch cut hit LeBlanc, Nami, and the Arbiter trait directly, making Corki/Riven and Yi/Kindred the most reliable fast 8 options heading into launch. The shallow 4-cost tank pool and nerfed tank items make stabilizing at level 8 a challenge across all of these comps.
+  </div>
+
+  <div class="callout callout-insight">
+    <span class="callout-label">Fast 9 Comps</span>
+    Graves/Vex (with aura-farming augment) · Jhin/Xayah · N.O.V.A. Marauders (with N.O.V.A. emblem)
+    <br><br>
+    Fast 9 boards are powerful but depend on specific conditions. Graves/Vex needs an aura-farming augment to function. N.O.V.A. Marauders requires a N.O.V.A. emblem to come online. These aren't comps you can force — they're comps you pivot into when the game hands you the right tools. The shallow tank pool remains the core barrier: there are no 5-cost tank champions in Set 17 (both Shen and Blitzcrank are magic fighters), which means even at level 9 you're relying on contested 4-cost tanks for your frontline.
+  </div>
+
+  <p>3-cost champions feel very strong right now — MF, Viktor, Aurora, Urgot, and Diana are all performing well as reroll carries. The 3% odds nerf at level 7 hasn't landed hard enough because trait-based economy (Timebreaker free rerolls, Primordian free units, Anima loot accumulation) compensates for the slightly lower hit rate.</p>
+
+  <p>Whether it's more valuable to stay at level 8 and try to 3-star 4-cost carries or push level 9 for splashable 5-costs is still an open question. From PBE, 3-star 4-cost attempts didn't see much play — it will take live data to determine whether backdooring 3-star 4-costs is worth the gold investment or if pushing level 9 to splash legendaries is the stronger path. The answer likely depends on lobby composition and how contested the 4-cost pool is in any given game.</p>
+
+  <h3>My Concerns for the Set</h3>
+
+  <p><strong>Timebreaker and Primordian economy.</strong> These traits are too accessible and too rewarding. They're easy to field early, and the free rerolls and units they generate make lose-streaking even safer than the god system alone would. The final patch nerfed Timebreaker's attack speed but left the economy generation untouched — which is the actual problem. Reducing their economy output or making them harder to activate would help.</p>
+
+  <p><strong>Win-streak incentives.</strong> Win-streaking needs to offer something that competes with the deterministic value of anvils, free champion direction, and trait-based economy. Higher-quality champion offerings for top placements, or win-streak-exclusive rewards, would help balance the strategy spectrum.</p>
+
+  <p><strong>4-cost tank pool.</strong> Four tanks at the 4-cost tier isn't enough to support a healthy fast-8 meta, and the nerfs to tank items make the problem worse. Tahm Kench getting nerfed in the final patch — when he was already one of only four options — makes this even more acute. Adding a 4-cost tank or making existing ones more flexible would open up non-reroll strategies.</p>
+
+  <p><strong>System sustainability.</strong> The Realm of the Gods may not be worth carrying across multiple sets the way augments were. The balance overhead is too high, the god pool creates permanent winners and losers, and the lose-streak incentive structure may prove too difficult to calibrate. My prediction: the mechanic stays for Set 17 and is replaced entirely by Set 18.</p>
+
+  <footer>
+    <p>Salito · Challenger TFT · Serbia · MMXXVI</p>
+    <p style="margin-top: 8px; letter-spacing: 2px; font-size: 9px;">Launch edition · Based on ~100-150 games of play, VOD review, and streamer analysis across the full PBE window</p>
+    <p style="margin-top: 4px; letter-spacing: 2px; font-size: 9px;">Analysis finalized after final branch cut patch · April 2026</p>
+  </footer>
+
+</div>
+
+</body>
+</html>
